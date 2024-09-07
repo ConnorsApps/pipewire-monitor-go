@@ -3,7 +3,6 @@ package pwmonitor
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os/exec"
@@ -12,8 +11,6 @@ import (
 	// Use jsonv2 for pure streaming
 	json_v2 "github.com/go-json-experiment/json"
 )
-
-var ContextCancelledError = errors.New("context cancelled")
 
 // Monitor listens to pipewire events and sends them to the output channel
 // Provide a filter function to remove events you're not interested in
@@ -38,7 +35,7 @@ func Monitor(ctx context.Context, output chan []*Event, filter ...func(*Event) b
 			return fmt.Errorf("pw-dump --monitor: %w", err)
 
 		case <-ctx.Done():
-			return ContextCancelledError
+			return context.Canceled
 
 		default:
 			chunkReader, chunkWriter := io.Pipe()
