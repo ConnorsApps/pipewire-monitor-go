@@ -1,7 +1,5 @@
 module github.com/ConnorsApps/pipewire-monitor-go
 
-go 1.23
+go 1.25
 
-toolchain go1.23.0
-
-require github.com/go-json-experiment/json v0.0.0-20240815175050-ebd3a8989ca1
+require github.com/go-json-experiment/json v0.0.0-20250910080747-cc2cfa0554c3
