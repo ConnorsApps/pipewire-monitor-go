@@ -8,9 +8,14 @@ pw-dump ---monitor --no-colors
 ## Example
 
 ```golang
+package main
+
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	pwmonitor "github.com/ConnorsApps/pipewire-monitor-go"
 )
@@ -22,17 +27,33 @@ func filter(e *pwmonitor.Event) bool {
 
 func main() {
 	var (
-		ctx        = context.Background()
-		eventsChan = make(chan []*pwmonitor.Event)
+		ctx, cancel = context.WithCancel(context.Background())
+		eventsChan  = make(chan []*pwmonitor.Event)
+		sigChan     = make(chan os.Signal, 1)
+		errChan     = make(chan error)
 	)
+	defer cancel()
+
+	// Setup signal handling for graceful shutdown
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
 	go func() {
-		panic(pwmonitor.Monitor(ctx, eventsChan, filter))
+		errChan <- pwmonitor.Monitor(ctx, eventsChan, filter)
 	}()
 
 	for {
-		events := <-eventsChan
-		for _, e := range events {
-			fmt.Println(e.Type, "id:", e.ID)
+		select {
+		case err := <-errChan:
+			fmt.Println("pwmonitor.Monitor closed with an error", err)
+			return
+		case <-sigChan:
+			fmt.Println("Received shutdown signal, cleaning up...")
+			cancel()
+			return
+		case events := <-eventsChan:
+			for _, e := range events {
+				fmt.Println(e.Type, "id:", e.ID)
+			}
 		}
 	}
 }
