@@ -1,10 +1,9 @@
 package pwmonitor
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
-
-	json_v2 "github.com/go-json-experiment/json"
 )
 
 type EventType string
@@ -140,11 +139,11 @@ func (e *Event) NodeProps() (*NodeProps, error) {
 	}
 
 	var props = &NodeProps{}
-	data, err := json_v2.Marshal(e.Info.Props)
+	data, err := json.Marshal(e.Info.Props)
 	if err != nil {
 		return props, err
 	}
 
-	err = json_v2.Unmarshal(data, props)
+	err = json.Unmarshal(data, props)
 	return props, err
 }

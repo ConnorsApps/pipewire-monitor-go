@@ -8,8 +8,7 @@ import (
 	"os/exec"
 	"time"
 
-	// Use jsonv2 for pure streaming
-	json_v2 "github.com/go-json-experiment/json"
+	"encoding/json"
 )
 
 // Monitor listens to pipewire events and sends them to the output channel
@@ -54,7 +53,7 @@ func Monitor(ctx context.Context, output chan []*Event, filter ...func(*Event) b
 
 			events := make([]*Event, 0, 10)
 
-			if err := json_v2.UnmarshalRead(chunkReader, &events); err != nil {
+			if err := json.NewDecoder(chunkReader).Decode(&events); err != nil {
 				return fmt.Errorf("unmarshal event: %w", err)
 			}
 
